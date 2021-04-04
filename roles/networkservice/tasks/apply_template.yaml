@@ -1,0 +1,14 @@
+# (C) Copyright IBM Corporation 2021.
+# LICENSE: GPL-3.0 https://opensource.org/licenses/GPL-3.0
+---
+# in production the input templates must be sanitized before applying the templates
+- name: apply template
+  block:
+    - set_fact:
+        # working with null values in Ansible, from https://medium.com/opsops/how-to-undefine-fact-in-ansible-5fff46432360
+        template_result: !!null # clean the variable from the previous runs
+    - set_fact:
+        template_result: "{{ lookup('template', 'format.j2', variable_start_string='[%', variable_end_string='%]') }}"
+  rescue:
+    - debug:
+        msg: failed to handle {{ template_to_apply }}

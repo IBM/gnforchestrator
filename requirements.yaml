@@ -1,0 +1,7 @@
+# (C) Copyright IBM Corporation 2021.
+# LICENSE: GPL-3.0 https://opensource.org/licenses/GPL-3.0
+---
+collections:
+  - name: community.kubernetes
+    version: "<1.0.0"
+  - operator_sdk.util

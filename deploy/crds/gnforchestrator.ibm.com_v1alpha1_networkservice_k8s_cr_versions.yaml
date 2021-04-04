@@ -1,0 +1,41 @@
+# (C) Copyright IBM Corporation 2021.
+# LICENSE: GPL-3.0 https://opensource.org/licenses/GPL-3.0
+apiVersion: gnforchestrator.ibm.com/v2alpha1
+kind: NetworkService
+metadata:
+  name: example-pingpong
+  labels:
+    service: pingpong
+spec:
+  properties:
+    message: Hello
+    pingVersion: v2.0
+    pongVersion: v2.1
+  components:
+    ping:
+      template:
+        apiVersion: ping.example.com/v1alpha1
+        kind: Ping
+        metadata:
+          name: "[% meta.name %]-ping"
+          namespace: "[% meta.namespace %]"
+        spec:
+          pingVersion: "[% pingVersion %]"
+          pongAddress: "[% pong.status.ip %]"
+          pongPort: "[% pong.status.port %]"
+    pong:
+      template:
+        apiVersion: pong.example.com/v1alpha1
+        kind: Pong
+        metadata:
+          name: "[% meta.name %]-pong"
+          namespace: "[% meta.namespace %]"
+        spec:
+          pongVersion: "[% pongVersion %]"
+          message: "[% message %]"
+          minReplicas: "[% replicas*2 %]"
+          maxReplicas: "[% replicas*3 %]"
+  replicas: 1
+  statusTemplate:
+    ip: "[% ping.status.ip %]"
+    port: "[% ping.status.port %]"

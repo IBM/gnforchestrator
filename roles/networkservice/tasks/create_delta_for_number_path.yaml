@@ -1,0 +1,40 @@
+# (C) Copyright IBM Corporation 2021.
+# LICENSE: GPL-3.0 https://opensource.org/licenses/GPL-3.0
+---
+- name: initialize current_value
+  set_fact:
+    current_value: "{{ variable_to_handle }}"
+
+- name: calculate the number value
+  set_fact:
+    current_value: "{{ current_value[path_segment] if path_segment in current_value else {} }}"
+  loop: "{{ number_path.split('.') }}"
+  loop_control:
+    loop_var: path_segment
+  when: number_path != ""
+
+- name: initialize the delta
+  set_fact:
+    delta: ""
+
+- name: create the delta
+  set_fact:
+    delta: "{{ delta + \"{'\" + path_segment + \"': \" }}"
+  loop: "{{ number_path.split('.') }}"
+  loop_control:
+    loop_var: path_segment
+
+- name: add the current value, converted to integer
+  set_fact:
+    delta: "{{ delta|default('') + current_value + ' ' }}"
+  when: current_value != {}
+
+- name: add closing quotes and curly brackets
+  set_fact:
+    delta: "{{ delta|default('') + '}' }}"
+  loop: "{{ number_path.split('.') }}"
+
+- name: add the delta
+  set_fact:
+    number_deltas: "{{ number_deltas + [delta] }}"
+  when: current_value != {}

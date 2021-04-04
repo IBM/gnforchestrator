@@ -1,0 +1,30 @@
+# (C) Copyright IBM Corporation 2021.
+# LICENSE: GPL-3.0 https://opensource.org/licenses/GPL-3.0
+---
+- name: get metadata
+  include_tasks: get_component_metadata.yaml
+
+- name: get the component CR
+  k8s_info:
+     api_version: "{{ component_item.value.template.apiVersion }}"
+     kind: "{{ component_item.value.template.kind }}"
+     name: "{{ component_metadata.name }}"
+     namespace: "{{ component_metadata.namespace }}"
+  register: component_result
+  when:
+    - component_item is defined
+    - component_item.value is defined
+    - component_item.value.template is defined
+    - component_item.value.template.apiVersion is defined
+    - component_item.value.template.kind is defined
+    - component_metadata.name is defined
+    - component_metadata.namespace is defined
+
+- name: register the component
+  set_fact: { "{{ component_item.key }}": "{{ component_result.resources[0] }}"}
+  when:
+    - component_result is defined
+    - component_result.resources is defined
+    - component_result.resources|length > 0
+    - component_item is defined
+    - component_item.key is defined

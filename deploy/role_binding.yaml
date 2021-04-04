@@ -1,0 +1,13 @@
+# (C) Copyright IBM Corporation 2021.
+# LICENSE: GPL-3.0 https://opensource.org/licenses/GPL-3.0
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: gnforchestrator
+subjects:
+- kind: ServiceAccount
+  name: gnforchestrator
+roleRef:
+  kind: Role
+  name: gnforchestrator
+  apiGroup: rbac.authorization.k8s.io

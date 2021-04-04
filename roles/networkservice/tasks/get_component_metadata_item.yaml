@@ -1,0 +1,15 @@
+# (C) Copyright IBM Corporation 2021.
+# LICENSE: GPL-3.0 https://opensource.org/licenses/GPL-3.0
+---
+- name: get metadata
+  vars:
+    template_to_apply: "{ \"[% metadata_item.key %]\": \"[% metadata_item.value %]\" }"
+  include_tasks: apply_template.yaml
+  when:
+    - metadata_item is defined
+    - metadata_item.key is defined
+    - metadata_item.value is defined
+
+- set_fact:
+    component_metadata: "{{ component_metadata | combine(template_result) }}"
+  when: template_result|default(None) != None

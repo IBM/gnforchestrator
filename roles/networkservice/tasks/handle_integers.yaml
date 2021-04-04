@@ -1,0 +1,65 @@
+# (C) Copyright IBM Corporation 2021.
+# LICENSE: GPL-3.0 https://opensource.org/licenses/GPL-3.0
+---
+- set_fact:
+    # working with null values in Ansible, from https://medium.com/opsops/how-to-undefine-fact-in-ansible-5fff46432360
+    crd: !!null # clean the variable from the previous runs
+
+- name: get the CRD
+  k8s_info:
+    api_version: "apiextensions.k8s.io/v1beta1"
+    kind: CustomResourceDefinition
+    name: "{{ kind_to_handle|lower + 's.' + api_version_to_handle.split('/')[0] }}"
+  register: crd_result
+
+- set_fact:
+    crd: "{{ crd_result.resources[0] }}"
+  when:
+    - crd_result is defined
+    - crd_result.resources is defined
+    - crd_result.resources|length > 0
+
+- set_fact:
+    node_path: []
+    number_paths: []
+
+- name: initialize the variable to hold schema_current_value
+  set_fact:
+    schema_current_value: "{{ crd.spec.validation.openAPIV3Schema }}"
+
+- name: calculate the schema object value
+  set_fact:
+    schema_current_value: "{{ schema_current_value[schema_path_segment] if schema_path_segment in schema_current_value else {} }}"
+  loop: "{{ schema_path.split('.') }}"
+  loop_control:
+    loop_var: schema_path_segment
+  when: schema_path != ""
+
+- name: handle the schema recursively
+  vars:
+    node_item: "{ 'key': '', 'value': {{ schema_current_value }} }"
+  include_tasks: handle_schema_node.yaml
+  when:
+    - crd|default(None) != None
+    - crd.spec is defined
+    - crd.spec.validation is defined
+    - crd.spec.validation.openAPIV3Schema is defined
+
+- set_fact:
+    number_deltas: []
+
+- name: create deltas for numbers
+  include_tasks: create_delta_for_number_path.yaml
+  loop: "{{ number_paths }}"
+  loop_control:
+    loop_var: number_path
+
+- set_fact:
+    handle_integers_result: "{{ variable_to_handle }}"
+
+- name: transform the numbers
+  set_fact:
+    handle_integers_result: "{{ handle_integers_result| combine(delta, recursive=True) }}"
+  loop: "{{ number_deltas }}"
+  loop_control:
+    loop_var: delta

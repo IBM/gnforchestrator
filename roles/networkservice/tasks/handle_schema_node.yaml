@@ -1,0 +1,28 @@
+# (C) Copyright IBM Corporation 2021.
+# LICENSE: GPL-3.0 https://opensource.org/licenses/GPL-3.0
+---
+- set_fact:
+    node_path: "{{ node_path + [node_item.key] }}"
+
+- name: handle properties recursively
+  vars:
+    properties_to_iterate: "{{ node_item.value.properties }}"
+  include_tasks: handle_schema_properties.yaml
+  when:
+    - node_item.key is defined
+    - node_item.value is defined
+    - node_item.value.type is defined
+    - node_item.value.type == 'object'
+    - node_item.value.properties is defined
+
+- name: add path if a number
+  set_fact:
+    number_paths: "{{ number_paths + [(node_path|join('.'))[1:]] }}"
+  when:
+    - node_item.key is defined
+    - node_item.value is defined
+    - node_item.value.type is defined
+    - node_item.value.type == 'integer'
+
+- set_fact:
+    node_path: "{{ node_path[:-1]  }}"

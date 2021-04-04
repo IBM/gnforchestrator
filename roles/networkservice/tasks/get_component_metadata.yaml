@@ -1,0 +1,16 @@
+# (C) Copyright IBM Corporation 2021.
+# LICENSE: GPL-3.0 https://opensource.org/licenses/GPL-3.0
+---
+- set_fact:
+    component_metadata: {}
+
+- name: get metadata
+  include_tasks: get_component_metadata_item.yaml
+  loop: "{{ component_item.value.template.metadata| dict2items }}"
+  loop_control:
+    loop_var: metadata_item
+  when:
+    - component_item is defined
+    - component_item.value is defined
+    - component_item.value.template is defined
+    - component_item.value.template.metadata is defined

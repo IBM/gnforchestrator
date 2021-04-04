@@ -1,0 +1,29 @@
+# (C) Copyright IBM Corporation 2021.
+# LICENSE: GPL-3.0 https://opensource.org/licenses/GPL-3.0
+---
+- name: apply Jinja template on the template field
+  vars:
+    template_to_apply: "[% component_item.value.template %]"
+  include_tasks: apply_template.yaml
+
+- set_fact:
+    # working with null values in Ansible, from https://medium.com/opsops/how-to-undefine-fact-in-ansible-5fff46432360
+    handle_integers_result: !!null # clean the variable from the previous runs
+
+- name: handle integers
+  vars:
+    variable_to_handle: "{{ template_result }}"
+    api_version_to_handle: "{{ template_result.apiVersion }}"
+    kind_to_handle: "{{ template_result.kind }}"
+    schema_path: ""
+  include_tasks: handle_integers.yaml
+  when: template_result|default(None) != None
+
+- debug:
+    msg: handle_integers_result after the call to handle_integers task is {{ handle_integers_result }}
+  when: handle_integers_result|default(None) != None
+
+- name: apply to Kubernetes
+  k8s:
+    definition: "{{ handle_integers_result }}"
+  when: handle_integers_result|default(None) != None

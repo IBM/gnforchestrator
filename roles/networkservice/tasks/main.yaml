@@ -1,0 +1,36 @@
+# (C) Copyright IBM Corporation 2021.
+# LICENSE: GPL-3.0 https://opensource.org/licenses/GPL-3.0
+---
+# a temporary hack, the long term solution is go over the spec and convert every field to camel case recursively
+# it uses the Operator SDK variable from
+# https://github.com/operator-framework/operator-sdk/blob/v0.8.x/pkg/ansible/runner/runner.go#L418
+- set_fact: { 'camel_case_spec': "{{ _gnforchestrator_ibm_com_networkservice_spec }}" }
+
+# in production the input must be sanitized before applying the templates
+- name: get existing properties
+  set_fact:  { "{{ property_item.key }}": "{{ property_item.value }}" }
+  loop: "{{ camel_case_spec.properties| default({}) | dict2items }}"
+  loop_control:
+    loop_var: property_item
+  when: camel_case_spec is defined
+
+- name: get existing components
+  include_tasks: get_component.yaml
+  loop: "{{ camel_case_spec.components| default({}) | dict2items }}"
+  loop_control:
+    loop_var: component_item
+  when: camel_case_spec is defined
+
+- name: apply components
+  include_tasks: apply_component.yaml
+  loop: "{{ camel_case_spec.components| default({}) | dict2items }}"
+  loop_control:
+    loop_var: component_item
+  when: camel_case_spec is defined
+
+- name: create the CR's status
+  include_tasks: update_status.yaml
+  loop: "{{ camel_case_spec.statusTemplate| default({}) | dict2items }}"
+  loop_control:
+    loop_var: status_item
+  when: camel_case_spec is defined

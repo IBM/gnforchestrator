@@ -1,0 +1,8 @@
+# (C) Copyright IBM Corporation 2021.
+# LICENSE: GPL-3.0 https://opensource.org/licenses/GPL-3.0
+---
+- name: handle properties recursively
+  include_tasks: handle_schema_node.yaml
+  loop: "{{ properties_to_iterate|dict2items }}"
+  loop_control:
+    loop_var: node_item
