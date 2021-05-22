@@ -6,7 +6,7 @@
 
 The involved operators:
 
-1. [gnf-orchestrator] (../../)
+1. [gnf-orchestrator](../../)
 1. [ping-operator](ping-operator)
 1. [pong-operator](pong-operator)
 
