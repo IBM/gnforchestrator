@@ -1,0 +1,37 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: 'mypong-pong'
+  namespace: '$NAMESPACE'
+spec:
+  selector:
+    matchLabels:
+      app: 'mypong-pong'
+  template:
+    metadata:
+      labels:
+        app: 'mypong-pong'
+        vnf: 'pong'
+        pingpong: 'pingpong.$NAMESPACE.example.com'
+    spec:
+      containers:
+      - name: 'pong-vnf'
+        image: '$PONG_VNF_IMAGE'
+        imagePullPolicy: Always
+        env:
+        - name: VNF_MANAGEMENT_PORT
+          value: '6005'
+        - name: VNF_FUNCTIONAL_PORT
+          value: '6006'
+        - name: VNF_VERSION
+          value: 'pong_v1'
+      - name: 'pong-vnf-manager'
+        image: '$PONG_VNF_MANAGER_IMAGE'
+        imagePullPolicy: Always
+        env:
+        - name: VNFMANAGER_PORT
+          value: '6004'
+        - name: VNF_ADDRESS
+          value: localhost
+        - name: VNF_MANAGEMENT_PORT
+          value: '6005'

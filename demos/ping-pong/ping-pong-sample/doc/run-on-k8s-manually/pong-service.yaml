@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: 'mypong-pong'
+  namespace: '$NAMESPACE'
+  labels:
+    app: 'mypong-pong'
+    vnf: 'pong'
+spec:
+  ports:
+  - port: 6004
+    name: manager-port
+  - port: 6005
+    name: vnf-management-port
+  - port: 6006
+    name: vnf-functional-port
+  selector:
+    app: 'mypong-pong'
+

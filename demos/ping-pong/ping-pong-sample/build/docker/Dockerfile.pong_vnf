@@ -1,0 +1,8 @@
+FROM golang:1.13.6
+MAINTAINER nirro@il.ibm.com
+
+COPY ./build/bin/pong-vnf /opt/ping-pong-sample/build/bin/
+
+WORKDIR /opt/ping-pong-sample/build/bin
+
+ENTRYPOINT ["./pong-vnf"]

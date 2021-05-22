@@ -1,0 +1,6 @@
+.idea/*
+protos/*.pb.go
+vendor
+build/bin
+*~
+.DS_Store

@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: 'myping-ping'
+  namespace: '$NAMESPACE'
+  labels:
+    app: 'myping-ping'
+    vnf: 'ping'
+spec:
+  ports:
+  - port: 6001
+    name: manager-port
+  - port: 6002
+    name: vnf-management-port
+  - port: 6003
+    name: vnf-functional-port
+  selector:
+    app: 'myping-ping'
+
