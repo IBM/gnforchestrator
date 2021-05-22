@@ -1,0 +1,10 @@
+---
+# defaults file for pong
+pong_manager_port: 6004
+pong_vnf_management_port: 6005
+pong_vnf_functional_port: 6006
+pong_version: v1.0
+message: pong
+min_replicas: 1
+max_replicas: 10
+registry: quay.io

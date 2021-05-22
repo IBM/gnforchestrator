@@ -1,0 +1,5 @@
+---
+# vars file for pong
+api_version: pong.example.com/v1alpha1
+kind: Pong
+metric_key_label: kubedriver.alm/metricKey

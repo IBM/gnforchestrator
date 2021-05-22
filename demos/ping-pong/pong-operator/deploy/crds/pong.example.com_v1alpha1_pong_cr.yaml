@@ -1,0 +1,4 @@
+apiVersion: pong.example.com/v1alpha1
+kind: Pong
+metadata:
+  name: example-pong

@@ -1,0 +1,8 @@
+---
+- version: v1alpha1
+  group: pong.example.com
+  kind: Pong
+  playbook: playbook.yaml
+  manageStatus: true
+  reconcilePeriod: 10s
+  watchDepedentResources: true

@@ -1,0 +1,86 @@
+---
+- name: get the CR
+  k8s_info:
+    api_version: "{{ api_version }}"
+    kind: "{{ kind }}"
+    name: "{{ meta.name }}"
+    namespace: "{{ meta.namespace }}"
+  register: cr_result
+
+- name: get metric key
+  set_fact:
+    metric_key: "{{ cr_result.resources[0].metadata.labels[metric_key_label] }}"
+  when:
+    - cr_result is defined
+    - cr_result.resources is defined
+    - cr_result.resources|length > 0
+    - cr_result.resources[0].metadata is defined
+    - cr_result.resources[0].metadata.labels is defined
+    - metric_key_label in cr_result.resources[0].metadata.labels
+
+- name: start pong
+  vars:
+    vnf: pong
+    manager_port: "{{ pong_manager_port }}"
+    vnf_management_port: "{{ pong_vnf_management_port }}"
+    vnf_functional_port: "{{ pong_vnf_functional_port }}"
+    version: "{{ pong_version }}"
+  k8s:
+    definition: "{{ lookup('template', 'deployment.yaml.j2') }}"
+
+- name: start pong service
+  vars:
+    vnf: pong
+    manager_port: "{{ pong_manager_port }}"
+    vnf_management_port: "{{ pong_vnf_management_port }}"
+    vnf_functional_port: "{{ pong_vnf_functional_port }}"
+  k8s:
+    definition: "{{ lookup('template', 'service.yaml.j2') }}"
+
+- name: create pong horizontal pod autoscaler
+  k8s:
+    definition:
+      apiVersion: autoscaling/v2beta1
+      kind: HorizontalPodAutoscaler
+      metadata:
+        name: "{{ meta.name }}-hpa"
+        namespace: "{{ meta.namespace }}"
+      spec:
+        minReplicas: "{{ min_replicas }}"
+        maxReplicas: "{{ max_replicas }}"
+        scaleTargetRef:
+          apiVersion: apps/v1
+          kind: Deployment
+          name: "{{ meta.name }}-pong"
+        metrics:
+        - type: Pods
+          pods:
+            metricName: pongness
+            targetAverageValue: 3
+
+- name: search for pong pods
+  k8s_info:
+    kind: Pod
+    namespace: "{{ meta.namespace }}"
+    label_selectors:
+      - vnf = pong
+      - pingpong = {{ meta.name }}
+  register: pong_pod_list
+
+- name: configure all pong pods
+  uri:
+    url: "http://{{ item.status.podIP }}:{{ pong_manager_port }}/configure"
+    method: POST
+    body_format: json
+    body:
+      message: "{{ message }}"
+  loop: "{{ pong_pod_list.resources }}"
+  when:
+    - item is defined
+    - item.status is defined
+    - item.status.podIP is defined
+  async: 30
+  poll: 0
+
+- name: update status
+  import_tasks: update_status.yaml

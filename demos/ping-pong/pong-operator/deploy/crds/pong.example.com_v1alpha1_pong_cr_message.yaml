@@ -1,0 +1,12 @@
+apiVersion: pong.example.com/v1alpha1
+kind: Pong
+metadata:
+  name: example-pong
+spec:
+  pongManagerPort: 6004
+  pongVnfManagementPort: 6005
+  pongVnfFunctionalPort: 6006
+  pongVersion: v1.4
+  message: HelloWorld
+  minReplicas: 1
+  maxReplicas: 10

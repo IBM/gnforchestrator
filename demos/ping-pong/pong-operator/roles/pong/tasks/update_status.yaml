@@ -1,0 +1,73 @@
+- name: generate pong service labels list
+  set_fact:
+    label_string_list: "{{ ['app=' + meta.name + '-pong'] }}"
+
+- name: search for pong service
+  k8s_info:
+    kind: Service
+    namespace: "{{ meta.namespace }}"
+    label_selectors: "{{ label_string_list }}"
+  register: pong_service_list
+
+- name: register pong service
+  set_fact:
+    pong_service: "{{ pong_service_list.resources | first }}"
+  when:
+    - pong_service_list is defined
+    - pong_service_list.resources is defined
+    - (pong_service_list.resources | length) > 0
+
+- set_fact:
+    ip_and_port_known: false
+    replicas_known: false
+
+- set_fact:
+    ip_and_port_known: true
+  when:
+    - pong_service is defined
+    - pong_service.spec is defined
+    - pong_service.spec.clusterIP is defined
+
+- name: update the resource status
+  k8s_status:
+    api_version: "{{ api_version }}"
+    kind: "{{ kind }}"
+    name: "{{ meta.name }}"
+    namespace: "{{ meta.namespace }}"
+    status:
+      ip: "{{ pong_service.spec.clusterIP }}"
+      port: "{{ pong_vnf_functional_port }}"
+  when: ip_and_port_known
+
+- name: search for pong pods
+  k8s_info:
+    kind: Pod
+    namespace: "{{ meta.namespace }}"
+    label_selectors:
+      - vnf = pong
+      - pingpong = {{ meta.name }}
+  register: pong_pod_list
+
+- set_fact:
+    replicas_known: true
+  when:
+    - pong_pod_list is defined
+    - pong_pod_list.resources is defined
+
+- name: set number of replicas
+  k8s_status:
+    api_version: "{{ api_version }}"
+    kind: "{{ kind }}"
+    name: "{{ meta.name }}"
+    namespace: "{{ meta.namespace }}"
+    status: "{{ { 'replicas': pong_pod_list.resources|length } }}"
+  when: replicas_known
+
+- name: set ready status
+  k8s_status:
+    api_version: "{{ api_version }}"
+    kind: "{{ kind }}"
+    name: "{{ meta.name }}"
+    namespace: "{{ meta.namespace }}"
+    status: "{{ { 'ready': true } }}"
+  when: ip_and_port_known and replicas_known

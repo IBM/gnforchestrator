@@ -1,0 +1,65 @@
+#jinja2: trim_blocks:False
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: '{{ meta.name }}-{{vnf}}'
+  namespace: '{{ meta.namespace }}'
+spec:
+  selector:
+    matchLabels:
+      app: '{{ meta.name }}-{{vnf}}'
+  template:
+    metadata:
+      labels:
+        app: '{{ meta.name }}-{{vnf}}'
+        vnf: '{{ vnf }}'
+        pingpong: '{{ meta.name }}'
+        {% if metric_key is defined -%}
+        {{ metric_key_label }}: '{{ metric_key }}'
+        {%- endif %}
+      annotations:
+        prometheus.io/scrape: 'true'
+        prometheus.io/port:   '{{ manager_port }}'
+    spec:
+      containers:
+      - name: '{{ vnf }}-vnf'
+        image: '{{ registry }}/ping-pong-sample/{{ vnf }}-vnf:0.0.1'
+        imagePullPolicy: Always
+        env:
+        - name: VNF_MANAGEMENT_PORT
+          value: '{{ vnf_management_port }}'
+        - name: VNF_FUNCTIONAL_PORT
+          value: '{{ vnf_functional_port }}'
+        - name: VNF_VERSION
+          value: '{{ version }}'
+      - name: '{{ vnf }}-vnf-manager'
+        image: '{{ registry }}/ping-pong-sample/{{ vnf }}-vnf-manager:0.0.1'
+        imagePullPolicy: Always
+        ports:
+        - containerPort: {{ manager_port | int }}
+          name: manager-port
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: manager-port
+            httpHeaders:
+            - name: Host
+              value: '{{ meta.name }}.pingpong.example.com'
+          initialDelaySeconds: 5
+          periodSeconds: 5
+        readinessProbe:
+          httpGet:
+            path: /readiness
+            port: manager-port
+            httpHeaders:
+            - name: Host
+              value: '{{ meta.name }}.pingpong.example.com'
+          initialDelaySeconds: 5
+          periodSeconds: 5
+        env:
+        - name: VNFMANAGER_PORT
+          value: '{{ manager_port }}'
+        - name: VNF_ADDRESS
+          value: localhost
+        - name: VNF_MANAGEMENT_PORT
+          value: '{{ vnf_management_port }}'
