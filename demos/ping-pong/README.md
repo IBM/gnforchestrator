@@ -6,9 +6,9 @@
 
 The involved operators:
 
-1. [gnf-orchestrator](../../)
-1. [ping-operator](ping-operator)
-1. [pong-operator](pong-operator)
+1. [gnf-orchestrator](https://github.com/IBM/gnforchestrator)
+1. [ping-operator](https://github.com/IBM/gnforchestrator/tree/main/demos/ping-pong/ping-operator)
+1. [pong-operator](https://github.com/IBM/gnforchestrator/tree/main/demos/ping-pong/pong-operator)
 
 The application code: [Ping-pong sample](ping-pong-sample)
 
