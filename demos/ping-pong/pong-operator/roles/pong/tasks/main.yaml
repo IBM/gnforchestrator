@@ -25,6 +25,7 @@
     vnf_management_port: "{{ pong_vnf_management_port }}"
     vnf_functional_port: "{{ pong_vnf_functional_port }}"
     version: "{{ pong_version }}"
+    registry: "{{ registry }}"
   k8s:
     definition: "{{ lookup('template', 'deployment.yaml.j2') }}"
 
