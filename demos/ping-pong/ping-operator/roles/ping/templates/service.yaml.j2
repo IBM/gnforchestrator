@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: '{{ meta.name }}-{{ vnf }}'
+  namespace: '{{ meta.namespace }}'
+  labels:
+    app: '{{ meta.name }}-{{ vnf }}'
+    vnf: '{{ vnf }}'
+spec:
+  ports:
+  - port: {{ manager_port }}
+    name: manager-port
+  - port: {{ vnf_management_port }}
+    name: vnf-management-port
+  - port: {{ vnf_functional_port }}
+    name: vnf-functional-port
+  selector:
+    app: '{{ meta.name }}-{{ vnf }}'

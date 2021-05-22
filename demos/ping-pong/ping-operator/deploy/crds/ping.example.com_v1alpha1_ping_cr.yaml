@@ -1,0 +1,4 @@
+apiVersion: ping.example.com/v1alpha1
+kind: Ping
+metadata:
+  name: example-ping

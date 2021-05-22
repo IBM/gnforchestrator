@@ -1,0 +1,5 @@
+---
+# vars file for ping
+api_version: ping.example.com/v1alpha1
+kind: Ping
+metric_key_label: kubedriver.alm/metricKey

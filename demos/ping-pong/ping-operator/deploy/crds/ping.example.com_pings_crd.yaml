@@ -1,0 +1,55 @@
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  name: pings.ping.example.com
+spec:
+  group: ping.example.com
+  names:
+    kind: Ping
+    listKind: PingList
+    plural: pings
+    singular: ping
+  scope: Namespaced
+  subresources:
+    status: {}
+  validation:
+    openAPIV3Schema:
+      type: object
+      properties:
+        spec:
+          type: object
+          properties:
+            pingManagerPort:
+              type: integer
+            pingVnfManagementPort:
+              type: integer
+            pingVnfFunctionalPort:
+              type: integer
+            pingVersion:
+              type: string
+            pongAddress:
+              type: string
+            pongPort:
+              type: integer
+        status:
+          type: object
+          properties:
+            replicas:
+              type: integer
+            ip:
+              type: string
+            port:
+              type: integer
+            ready:
+              type: boolean
+  additionalPrinterColumns:
+    - name: ip
+      JSONPath: .status.ip
+      type: string
+    - name: port
+      JSONPath: .status.port
+      type: integer
+  versions:
+  - name: v1alpha1
+    served: true
+    storage: true

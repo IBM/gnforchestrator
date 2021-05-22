@@ -7,4 +7,3 @@ pong_version: v1.0
 message: pong
 min_replicas: 1
 max_replicas: 10
-registry: quay.io

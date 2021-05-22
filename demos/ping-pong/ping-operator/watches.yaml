@@ -1,0 +1,8 @@
+---
+- version: v1alpha1
+  group: ping.example.com
+  kind: Ping
+  playbook: playbook.yaml
+  manageStatus: true
+  reconcilePeriod: 10s
+  watchDepedentResources: true

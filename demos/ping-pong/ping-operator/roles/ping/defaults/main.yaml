@@ -1,0 +1,7 @@
+---
+# defaults file for ping
+ping_manager_port: 6001
+ping_vnf_management_port: 6002
+ping_vnf_functional_port: 6003
+ping_version: v1.0
+

@@ -1,0 +1,11 @@
+apiVersion: ping.example.com/v1alpha1
+kind: Ping
+metadata:
+  name: example-ping
+spec:
+  pingManagerPort: 6001
+  pingVnfManagementPort: 6002
+  pingVnfFunctionalPort: 6003
+  pingVersion: v1.0
+  pongAddress: 172.30.193.231
+  pongPort: 6006

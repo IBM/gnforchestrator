@@ -1,0 +1,73 @@
+- name: generate ping service labels list
+  set_fact:
+    label_string_list: "{{ ['app=' + meta.name + '-ping'] }}"
+
+- name: search for ping service
+  k8s_info:
+    kind: Service
+    namespace: "{{ meta.namespace }}"
+    label_selectors: "{{ label_string_list }}"
+  register: ping_service_list
+
+- name: register ping service
+  set_fact:
+    ping_service: "{{ ping_service_list.resources | first }}"
+  when:
+    - ping_service_list is defined
+    - ping_service_list.resources is defined
+    - (ping_service_list.resources | length) > 0
+
+- set_fact:
+    ip_and_port_known: false
+    replicas_known: false
+
+- set_fact:
+    ip_and_port_known: true
+  when:
+    - ping_service is defined
+    - ping_service.spec is defined
+    - ping_service.spec.clusterIP is defined
+
+- name: update the resource status
+  k8s_status:
+    api_version: "{{ api_version }}"
+    kind: "{{ kind }}"
+    name: "{{ meta.name }}"
+    namespace: "{{ meta.namespace }}"
+    status:
+      ip: "{{ ping_service.spec.clusterIP }}"
+      port: "{{ ping_vnf_functional_port }}"
+  when: ip_and_port_known
+
+- name: search for ping pods
+  k8s_info:
+    kind: Pod
+    namespace: "{{ meta.namespace }}"
+    label_selectors:
+      - vnf = ping
+      - pingpong = {{ meta.name }}
+  register: ping_pod_list
+
+- set_fact:
+    replicas_known: true
+  when:
+    - ping_pod_list is defined
+    - ping_pod_list.resources is defined
+
+- name: set number of replicas
+  k8s_status:
+    api_version: "{{ api_version }}"
+    kind: "{{ kind }}"
+    name: "{{ meta.name }}"
+    namespace: "{{ meta.namespace }}"
+    status: "{{ { 'replicas': ping_pod_list.resources|length } }}"
+  when: replicas_known
+
+- name: set ready status
+  k8s_status:
+    api_version: "{{ api_version }}"
+    kind: "{{ kind }}"
+    name: "{{ meta.name }}"
+    namespace: "{{ meta.namespace }}"
+    status: "{{ { 'ready': true } }}"
+  when: ip_and_port_known and replicas_known
